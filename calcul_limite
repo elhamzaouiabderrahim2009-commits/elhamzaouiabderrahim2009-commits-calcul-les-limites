@@ -1,0 +1,77 @@
+
+import sympy as sp
+
+x = sp.Symbol('x', real=True)
+
+def calcul_limite():
+    print("=" * 45)
+    print("       CALCULATEUR DE LIMITES")
+    print("=" * 45)
+
+    print("Exemples :")
+    print("sqrt(x**2 + 1) - x")
+    print("atan(x)/x")
+    print("(sqrt(x+1)-1)/x")
+    print("(x**2-1)/(x-1)")
+
+    expression = input("\nEntrez f(x) = ")
+
+    try:
+        f = sp.sympify(
+            expression,
+            locals={
+                'x': x,
+                'sqrt': sp.sqrt,
+                'atan': sp.atan,
+                'asin': sp.asin,
+                'acos': sp.acos,
+                'sin': sp.sin,
+                'cos': sp.cos,
+                'tan': sp.tan,
+                'log': sp.log,
+                'exp': sp.exp,
+                'pi': sp.pi,
+                'oo': sp.oo
+            }
+        )
+
+        print("\nChoisissez la destination :")
+        print("1 : +infini")
+        print("2 : -infini")
+        print("3 : 0")
+        print("4 : un nombre reel")
+
+        choix = input("Votre choix : ")
+
+        if choix == '1':
+            a = sp.oo
+        elif choix == '2':
+            a = -sp.oo
+        elif choix == '3':
+            a = 0
+        elif choix == '4':
+            a = sp.sympify(input("Valeur de a = "))
+        else:
+            print("Choix invalide.")
+            return
+
+        print("\nCalcul de la limite...")
+
+        L = sp.limit(f, x, a)
+
+        print("Limite exacte :", L)
+        print("Valeur simplifiee :", sp.simplify(L))
+
+        if L in (sp.oo, -sp.oo):
+            print("La limite est infinie.")
+        elif L.has(sp.Limit):
+            print("La limite n'a pas ete entierement calculee.")
+        elif L.is_finite:
+            print("La limite est finie.")
+
+    except Exception as e:
+        print("Calcul impossible automatiquement.")
+        print("Verifiez l'ecriture de la fonction.")
+        print("Details :", e)
+
+calcul_limite()

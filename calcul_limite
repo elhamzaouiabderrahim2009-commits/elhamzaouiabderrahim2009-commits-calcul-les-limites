@@ -1,77 +1,47 @@
-
+import streamlit as st
 import sympy as sp
 
-x = sp.Symbol('x', real=True)
+st.set_page_config(page_title="حساب النهايات", page_icon="🧮")
+st.title("🧮 حساب النهايات - Calcul des Limites")
 
-def calcul_limite():
-    print("=" * 45)
-    print("       CALCULATEUR DE LIMITES")
-    print("=" * 45)
+x = sp.Symbol('x')
 
-    print("Exemples :")
-    print("sqrt(x**2 + 1) - x")
-    print("atan(x)/x")
-    print("(sqrt(x+1)-1)/x")
-    print("(x**2-1)/(x-1)")
+st.write("اختر دالة لحساب النهاية عند ما لا نهاية:")
 
-    expression = input("\nEntrez f(x) = ")
+options = {
+    "sqrt(x**2 + 1) - x": "sqrt(x**2 + 1) - x",
+    "atan(x)/x": "atan(x)/x",
+    "(sqrt(x+1)-1)/x": "(sqrt(x+1)-1)/x",
+    "(x**2-1)/(x-1)": "(x**2-1)/(x-1)"
+}
 
+choice = st.selectbox("اختر الدالة:", list(options.keys()))
+
+if st.button("احسب النهاية"):
+    expr_str = options[choice]
+    expr = sp.sympify(expr_str)
+    
     try:
-        f = sp.sympify(
-            expression,
-            locals={
-                'x': x,
-                'sqrt': sp.sqrt,
-                'atan': sp.atan,
-                'asin': sp.asin,
-                'acos': sp.acos,
-                'sin': sp.sin,
-                'cos': sp.cos,
-                'tan': sp.tan,
-                'log': sp.log,
-                'exp': sp.exp,
-                'pi': sp.pi,
-                'oo': sp.oo
-            }
-        )
-
-        print("\nChoisissez la destination :")
-        print("1 : +infini")
-        print("2 : -infini")
-        print("3 : 0")
-        print("4 : un nombre reel")
-
-        choix = input("Votre choix : ")
-
-        if choix == '1':
-            a = sp.oo
-        elif choix == '2':
-            a = -sp.oo
-        elif choix == '3':
-            a = 0
-        elif choix == '4':
-            a = sp.sympify(input("Valeur de a = "))
-        else:
-            print("Choix invalide.")
-            return
-
-        print("\nCalcul de la limite...")
-
-        L = sp.limit(f, x, a)
-
-        print("Limite exacte :", L)
-        print("Valeur simplifiee :", sp.simplify(L))
-
-        if L in (sp.oo, -sp.oo):
-            print("La limite est infinie.")
-        elif L.has(sp.Limit):
-            print("La limite n'a pas ete entierement calculee.")
-        elif L.is_finite:
-            print("La limite est finie.")
-
+        lim_inf = sp.limit(expr, x, sp.oo)
+        lim_moins_inf = sp.limit(expr, x, -sp.oo)
+        
+        st.success(f"نهاية {expr_str} عند +∞ هي: {lim_inf}")
+        st.info(f"نهاية {expr_str} عند -∞ هي: {lim_moins_inf}")
+        
+        st.latex(f"\\lim_{{x \\to \\infty}} {sp.latex(expr)} = {sp.latex(lim_inf)}")
+        
     except Exception as e:
-        print("Calcul impossible automatiquement.")
-        print("Verifiez l'ecriture de la fonction.")
-        print("Details :", e)
+        st.error(f"خطأ: {e}")
 
-calcul_limite()
+st.markdown("---")
+st.write("يمكنك أيضا كتابة دالة بنفسك:")
+custom = st.text_input("اكتب الدالة مثلا: sin(x)/x")
+
+if custom:
+    try:
+        expr_custom = sp.sympify(custom)
+        lim = sp.limit(expr_custom, x, sp.oo)
+        st.success(f"النهاية عند +∞ هي: {lim}")
+    except Exception as e:
+        st.error(f"تأكد من كتابة الدالة بشكل صحيح")
+

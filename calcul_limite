@@ -1,47 +1,56 @@
-import streamlit as st
+
+
 import sympy as sp
 
-st.set_page_config(page_title="حساب النهايات", page_icon="🧮")
-st.title("🧮 حساب النهايات - Calcul des Limites")
+x = sp.Symbol('x', real=True)
 
-x = sp.Symbol('x')
+def calcul_limite(expression, destination):
+    fonctions = {
+        "x": x,
+        "sqrt": sp.sqrt,
+        "atan": sp.atan,
+        "asin": sp.asin,
+        "acos": sp.acos,
+        "sin": sp.sin,
+        "cos": sp.cos,
+        "tan": sp.tan,
+        "log": sp.log,
+        "exp": sp.exp,
+        "pi": sp.pi,
+        "oo": sp.oo
+    }
 
-st.write("اختر دالة لحساب النهاية عند ما لا نهاية:")
-
-options = {
-    "sqrt(x**2 + 1) - x": "sqrt(x**2 + 1) - x",
-    "atan(x)/x": "atan(x)/x",
-    "(sqrt(x+1)-1)/x": "(sqrt(x+1)-1)/x",
-    "(x**2-1)/(x-1)": "(x**2-1)/(x-1)"
-}
-
-choice = st.selectbox("اختر الدالة:", list(options.keys()))
-
-if st.button("احسب النهاية"):
-    expr_str = options[choice]
-    expr = sp.sympify(expr_str)
-    
     try:
-        lim_inf = sp.limit(expr, x, sp.oo)
-        lim_moins_inf = sp.limit(expr, x, -sp.oo)
-        
-        st.success(f"نهاية {expr_str} عند +∞ هي: {lim_inf}")
-        st.info(f"نهاية {expr_str} عند -∞ هي: {lim_moins_inf}")
-        
-        st.latex(f"\\lim_{{x \\to \\infty}} {sp.latex(expr)} = {sp.latex(lim_inf)}")
-        
-    except Exception as e:
-        st.error(f"خطأ: {e}")
+        f = sp.sympify(expression, locals=fonctions)
+        a = sp.sympify(destination, locals=fonctions)
 
-st.markdown("---")
-st.write("يمكنك أيضا كتابة دالة بنفسك:")
-custom = st.text_input("اكتب الدالة مثلا: sin(x)/x")
+        resultat = sp.limit(f, x, a)
+        resultat = sp.simplify(resultat)
 
-if custom:
-    try:
-        expr_custom = sp.sympify(custom)
-        lim = sp.limit(expr_custom, x, sp.oo)
-        st.success(f"النهاية عند +∞ هي: {lim}")
-    except Exception as e:
-        st.error(f"تأكد من كتابة الدالة بشكل صحيح")
+        if resultat.has(sp.Limit):
+            return {
+                "statut": "incomplet",
+                "resultat": str(resultat),
+                "message": "Limite non resolue completement."
+            }
 
+        return {
+            "statut": "succes",
+            "resultat": str(resultat),
+            "forme_exacte": sp.sstr(resultat),
+            "message": "Calcul termine."
+        }
+
+    except (ValueError, TypeError, SyntaxError) as erreur:
+        return {
+            "statut": "erreur",
+            "resultat": None,
+            "message": "Expression mathematique invalide."
+        }
+
+    except Exception:
+        return {
+            "statut": "erreur",
+            "resultat": None,
+            "message": "Impossible de calculer cette limite."
+        }
